@@ -1,0 +1,10 @@
+{
+  "name": "library-pods-prototype",
+  "type": "module",
+  "scripts": {
+    "solid": "cd solid-server && npx @solid/community-server -c @css:config/file.json -f data/"
+  },
+  "dependencies": {
+    "@solid/community-server": "^7.1.8"
+  }
+}
