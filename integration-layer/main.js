@@ -1,4 +1,4 @@
-import { getResourceInfo, createContainerAt, getSolidDataset, saveSolidDatasetAt, createSolidDataset, createThing, setThing, getThing, addUrl, addStringNoLocale, solidDatasetAsTurtle, deleteFile, buildThing } from "@inrupt/solid-client"
+import { getResourceInfo, createContainerAt, getSolidDataset, saveSolidDatasetAt, createSolidDataset, createThing, setThing, getThing, solidDatasetAsTurtle, deleteFile, buildThing } from "@inrupt/solid-client"
 import { login, logout, getDefaultSession, handleIncomingRedirect } from "@inrupt/solid-client-authn-browser"
 
 const SERVER = "http://localhost:3000"
@@ -10,23 +10,32 @@ const ns = "https://example.com/"
 
 const session = getDefaultSession()
 
-const statusEl = document.getElementById("status")
-const outputEl = document.getElementById("output")
-function setStatus(msg) { statusEl.textContent = msg }
-function setOutput(msg) { outputEl.textContent = msg }
+export async function init() {
+    await handleIncomingRedirect({ restorePreviousSession: true })
+    if (session.info.isLoggedIn) {
+        await ensureAppProfileSpace()
+        return `Logged in\nWebID: ${session.info.webId}\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
+    } else {
+        return `Not logged in\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
+    }
+}
 
-async function solidAuth() {
+export async function doLogin(redirectUrl) {
     if (session.info.isLoggedIn) return
     try {
         await login({
             oidcIssuer: SERVER,
-            redirectUrl: window.location.href,
+            redirectUrl: redirectUrl, // window.location.href
             clientName: "cori-integration-layer",
         })
     } catch (err) {
         console.error("Solid login failed:", err)
         throw err
     }
+}
+
+export async function doLogout() {
+    await logout() // window.location.reload()
 }
 
 async function ensureContainer(url) {
@@ -56,7 +65,6 @@ async function ensureDataset(url) {
 }
 
 async function ensureAppProfileSpace() {
-    console.log("Ensuring app profile space...")
     if (!session.info.isLoggedIn) throw new Error("Not logged in")
     await ensureContainer(`${SERVER}/${POD}/private/`)
     await ensureContainer(`${SERVER}/${POD}/private/apps/`)
@@ -87,50 +95,29 @@ async function appProfileWriteDemo() {
     return APP_PROFILE_URL
 }
 
-async function init() {
-    await handleIncomingRedirect({ restorePreviousSession: true })
-    if (session.info.isLoggedIn) {
-        await ensureAppProfileSpace()
-        setStatus(`Logged in\nWebID: ${session.info.webId}\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`)
-    } else {
-        setStatus(`Not logged in\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`)
-    }
-}
-
-document.getElementById("login").onclick = async () => {
-    await solidAuth()
-}
-
-document.getElementById("logout").onclick = async () => {
-    await logout()
-    window.location.reload()
-}
-
-document.getElementById("read").onclick = async () => {
+export async function read() {
     try {
-        setOutput("Profile contents:\n\n" + await appProfileRead())
+        return "Profile contents:\n\n" + await appProfileRead()
     } catch (e) {
-        setOutput("Read error:\n" + (e?.message ?? String(e)))
+        return "Read error:\n" + (e?.message ?? String(e))
     }
 }
 
-document.getElementById("write").onclick = async () => {
+export async function write() {
     try {
         const url = await appProfileWriteDemo()
-        setOutput(`RDF written to profile:\n${url}`)
+        return `RDF written to profile:\n${url}`
     } catch (e) {
-        setOutput("Write error:\n" + (e?.message ?? String(e)))
+        return "Write error:\n" + (e?.message ?? String(e))
     }
 }
 
-document.getElementById("clear").onclick = async () => {
+export async function clear() {
     try {
-        await deleteFile(APP_PROFILE_URL, { fetch: session.fetch })
+        await deleteFile(APP_PROFILE_URL, {fetch: session.fetch})
         await ensureAppProfileSpace()
-        setOutput("Profile contents:\n\n" + await appProfileRead())
+        return "Profile contents:\n\n" + await appProfileRead()
     } catch (e) {
-        setOutput("Clear error:\n" + (e?.message ?? String(e)))
+        return "Clear error:\n" + (e?.message ?? String(e))
     }
 }
-
-await init()

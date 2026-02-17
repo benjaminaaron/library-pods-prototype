@@ -23,6 +23,19 @@
     <h3>Output</h3>
     <pre id="output"></pre>
 
-    <script type="module" src="./main.js"></script>
+    <script type="module">
+        import { doLogin, doLogout, read, write, clear, init } from "./dist/bundle.js"
+
+        function setStatus(msg) { document.getElementById("status").textContent = msg }
+        function setOutput(msg) { document.getElementById("output").textContent = msg }
+
+        document.getElementById("login").onclick = async () => { await doLogin(window.location.href) }
+        document.getElementById("logout").onclick = async () => { await doLogout(); window.location.reload() }
+        document.getElementById("read").onclick = async () => { setOutput(await read()) }
+        document.getElementById("write").onclick = async () => { setOutput(await write()) }
+        document.getElementById("clear").onclick = async () => { setOutput(await clear()) }
+
+        setStatus(await init())
+    </script>
 </body>
 </html>
