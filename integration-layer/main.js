@@ -14,9 +14,14 @@ export async function init() {
     await handleIncomingRedirect({ restorePreviousSession: true })
     if (session.info.isLoggedIn) {
         await ensureAppProfileSpace()
-        return `Logged in\nWebID: ${session.info.webId}\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
-    } else {
-        return `Not logged in\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
+        return {
+            loggedIn: true,
+            msg: `Logged in\nWebID: ${session.info.webId}\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
+        }
+    }
+    return {
+        loggedIn: false,
+        msg: `Not logged in\nWebID card: ${WEBID_CARD_URL}\nApp profile: ${APP_PROFILE_URL}`
     }
 }
 
@@ -28,9 +33,10 @@ export async function doLogin(redirectUrl) {
             redirectUrl: redirectUrl, // window.location.href
             clientName: "cori-integration-layer",
         })
+        return true
     } catch (err) {
         console.error("Solid login failed:", err)
-        throw err
+        return false
     }
 }
 

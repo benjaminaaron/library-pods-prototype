@@ -35,7 +35,8 @@
         document.getElementById("write").onclick = async () => { setOutput(await write()) }
         document.getElementById("clear").onclick = async () => { setOutput(await clear()) }
 
-        setStatus(await init())
+        let res = await init()
+        setStatus(res.msg)
     </script>
 </body>
 </html>

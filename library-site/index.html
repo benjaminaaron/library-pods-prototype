@@ -119,7 +119,7 @@
     <nav class="nav">
         <a href="#">Catalogue</a>
         <a href="#">Account Login</a>
-        <a href="#">Connect your Solid Pod</a>
+        <a href="#" id="connect-solid">Connect your Solid Pod</a>
     </nav>
 </header>
 
@@ -162,5 +162,19 @@
         </div>
     </section>
 </main>
+<script type="module">
+    import { doLogin, init } from "../integration-layer/dist/bundle.js"
+
+    function setIsLoggedIn(loggedIn) {
+        document.getElementById("connect-solid").innerText = loggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
+    }
+
+    document.getElementById("connect-solid").onclick = async () => {
+        setIsLoggedIn(await doLogin(window.location.href))
+    }
+
+    let res = await init()
+    setIsLoggedIn(res.loggedIn)
+</script>
 </body>
 </html>
