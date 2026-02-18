@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <title>Library Site Mockup</title>
     <style>
         body {
@@ -72,6 +73,7 @@
             gap: 14px;
         }
         .book {
+            position: relative;
             border: 1px solid #d6e2f0;
             border-radius: 14px;
             padding: 14px;
@@ -92,6 +94,7 @@
             margin-top: 60px;
         }
         .event {
+            position: relative;
             border: 1px solid #f0d9b5;
             border-radius: 14px;
             padding: 14px;
@@ -110,6 +113,48 @@
         .event-date {
             font-size: 13px;
             color: #777;
+        }
+        .wishlist-btn {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.85);
+            color: #1f3f5c;
+            font-size: 12px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        body.solid-connected .wishlist-btn {
+            display: inline-flex;
+        }
+        .wishlist-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(0, 0, 0, 0.25);
+        }
+        .wishlist-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -8px;
+            right: 0;
+            transform: translateY(-100%);
+            background: rgba(17, 17, 17, 0.92);
+            color: #fff;
+            font-size: 12px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .wishlist-btn:hover::after {
+            opacity: 1;
         }
     </style>
 </head>
@@ -132,15 +177,24 @@
     <section>
         <h2>Newly added books</h2>
         <div class="books">
-            <article class="book">
+            <article class="book" data-type="book" data-id="book1">
+                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
                 <div class="book-title">The Quiet City</div>
                 <div class="book-meta">by Lina Novak<br />Fiction · 2025</div>
             </article>
-            <article class="book">
+            <article class="book" data-type="book" data-id="book2">
+                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
                 <div class="book-title">Learning Graphs</div>
                 <div class="book-meta">by M. Rivera<br />Non-fiction · 2024</div>
             </article>
-            <article class="book">
+            <article class="book" data-type="book" data-id="book3">
+                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
                 <div class="book-title">Small Worlds</div>
                 <div class="book-meta">by A. Schmidt<br />Essays · 2026</div>
             </article>
@@ -148,15 +202,24 @@
     </section>
     <section class="events">
         <h2>Current events</h2>
-        <div class="event">
+        <div class="event" data-type="event" data-id="event1">
+            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <i class="fa-solid fa-plus"></i>
+            </button>
             <div class="event-title">Author Reading: Contemporary Munich</div>
             <div class="event-date">March 12, 2026 · 19:00</div>
         </div>
-        <div class="event">
+        <div class="event" data-type="event" data-id="event2">
+            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <i class="fa-solid fa-plus"></i>
+            </button>
             <div class="event-title">Workshop: Introduction to Genealogy Research</div>
             <div class="event-date">March 18, 2026 · 16:00</div>
         </div>
-        <div class="event">
+        <div class="event" data-type="event" data-id="event3">
+            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <i class="fa-solid fa-plus"></i>
+            </button>
             <div class="event-title">Children’s Story Hour</div>
             <div class="event-date">March 22, 2026 · 10:30</div>
         </div>
@@ -169,6 +232,7 @@
         const btn = document.getElementById("connect-solid")
         btn.innerText = isLoggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
         btn.onclick = isLoggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
+        document.body.classList.toggle("solid-connected", !!isLoggedIn)
         let query = `
                 PREFIX ex: <https://example.com/>
                 SELECT ?name WHERE { ?s ex:name ?name }`
@@ -176,6 +240,16 @@
         let name = rows[0]?.name
         document.getElementById("welcome-header").innerText = (isLoggedIn && name) ? `Welcome back ${name}!` : "Welcome, nice that you are here!"
     }
+
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest(".wishlist-btn")
+        if (!btn) return
+        const item = btn.closest(".book, .event")
+        if (!item) return
+        const type = item.dataset.type
+        const id = item.dataset.id
+        console.log("Add to wishlist:", { type, id })
+    })
 
     let res = await init()
     await updateSolidLoginStatus(res.loggedIn)
