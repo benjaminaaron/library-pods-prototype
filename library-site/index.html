@@ -124,7 +124,7 @@
 </header>
 
 <main class="container">
-    <div class="welcome">Welcome, nice that you are here!</div>
+    <div class="welcome" id="welcome-header">Welcome, nice that you are here!</div>
     <div class="search">
         <input type="text" placeholder="Search ..." aria-label="Search" />
     </div>
@@ -163,16 +163,22 @@
     </section>
 </main>
 <script type="module">
-    import { doLogin, doLogout, init } from "../integration-layer/dist/bundle.js"
+    import { doLogin, doLogout, init, runQueryOnProfile } from "../integration-layer/dist/bundle.js"
 
-    function setIsLoggedIn(loggedIn) {
+    async function updateSolidLoginStatus(isLoggedIn) {
         const btn = document.getElementById("connect-solid")
-        btn.innerText = loggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
-        btn.onclick = loggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
+        btn.innerText = isLoggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
+        btn.onclick = isLoggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
+        let query = `
+                PREFIX ex: <https://example.com/>
+                SELECT ?name WHERE { ?s ex:name ?name }`
+        let rows = await runQueryOnProfile(query)
+        let name = rows[0]?.name
+        document.getElementById("welcome-header").innerText = (isLoggedIn && name) ? `Welcome back ${name}!` : "Welcome, nice that you are here!"
     }
 
     let res = await init()
-    setIsLoggedIn(res.loggedIn)
+    await updateSolidLoginStatus(res.loggedIn)
 </script>
 </body>
 </html>
