@@ -1,5 +1,6 @@
-import { getResourceInfo, createContainerAt, getSolidDataset, saveSolidDatasetAt, createSolidDataset, createThing, setThing, getThing, solidDatasetAsTurtle, deleteFile, buildThing } from "@inrupt/solid-client"
+import { getResourceInfo, createContainerAt, getSolidDataset, saveSolidDatasetAt, createSolidDataset, createThing, setThing, getThing, solidDatasetAsTurtle, deleteFile, buildThing, toRdfJsDataset } from "@inrupt/solid-client"
 import { login, logout, getDefaultSession, handleIncomingRedirect } from "@inrupt/solid-client-authn-browser"
+import { sparqlSelect, storeFromDataset } from "@foerderfunke/sem-ops-utils"
 
 const SERVER = "http://localhost:3000"
 const POD = "citizen-pod"
@@ -84,8 +85,8 @@ function userThingUrl() {
 
 async function appProfileRead() {
     await ensureAppProfileSpace()
-    const ds = await getSolidDataset(APP_PROFILE_URL, { fetch: session.fetch })
-    return solidDatasetAsTurtle(ds)
+    const solidDs = await getSolidDataset(APP_PROFILE_URL, { fetch: session.fetch })
+    return solidDatasetAsTurtle(solidDs)
 }
 
 async function appProfileWriteDemo() {
@@ -94,6 +95,7 @@ async function appProfileWriteDemo() {
     const existing = getThing(ds, userThingUrl())
     const userThing = buildThing(existing ?? createThing({ url: userThingUrl() }))
         .addStringNoLocale(`${ns}pred`, "hello world")
+        .addStringNoLocale(`${ns}name`, "Benjamin")
         .addUrl(`${ns}rel`, `${ns}obj`)
         .build()
     ds = setThing(ds, userThing)
@@ -120,10 +122,21 @@ export async function write() {
 
 export async function clear() {
     try {
-        await deleteFile(APP_PROFILE_URL, {fetch: session.fetch})
+        await deleteFile(APP_PROFILE_URL, { fetch: session.fetch })
         await ensureAppProfileSpace()
         return "Profile contents:\n\n" + await appProfileRead()
     } catch (e) {
         return "Clear error:\n" + (e?.message ?? String(e))
     }
+}
+
+export async function getProfileAsStore() {
+    const solidDs = await getSolidDataset(APP_PROFILE_URL, { fetch: session.fetch })
+    const ds = toRdfJsDataset(solidDs)
+    return storeFromDataset(ds)
+}
+
+export async function runQueryOnProfile(query) {
+    const store = await getProfileAsStore()
+    return await sparqlSelect(query, [store])
 }

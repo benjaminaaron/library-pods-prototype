@@ -16,6 +16,7 @@
     <button id="read">Read</button>
     <button id="write">Write</button>
     <button id="clear">Clear</button>
+    <button id="dev">Dev</button>
 
     <h3>Status</h3>
     <pre id="status"></pre>
@@ -24,7 +25,7 @@
     <pre id="output"></pre>
 
     <script type="module">
-        import { doLogin, doLogout, read, write, clear, init } from "./dist/bundle.js"
+        import { doLogin, doLogout, read, write, clear, init, runQueryOnProfile } from "./main.js" // "./dist/bundle.js"
 
         function setStatus(msg) { document.getElementById("status").textContent = msg }
         function setOutput(msg) { document.getElementById("output").textContent = msg }
@@ -34,6 +35,12 @@
         document.getElementById("read").onclick = async () => { setOutput(await read()) }
         document.getElementById("write").onclick = async () => { setOutput(await write()) }
         document.getElementById("clear").onclick = async () => { setOutput(await clear()) }
+        document.getElementById("dev").onclick = async () => {
+            let query = `
+                PREFIX ex: <https://example.com/>
+                SELECT ?name WHERE { ?s ex:name ?name }`
+            console.log(await runQueryOnProfile(query))
+        }
 
         let res = await init()
         setStatus(res.msg)
