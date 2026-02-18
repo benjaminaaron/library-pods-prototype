@@ -114,13 +114,13 @@
             font-size: 13px;
             color: #777;
         }
-        .wishlist-btn {
+        .action-btn {
             display: none;
             position: absolute;
             top: 10px;
-            right: 10px;
-            width: 22px;
-            height: 22px;
+            height: 26px;
+            min-width: 26px;
+            padding: 0 6px;
             border-radius: 999px;
             border: 1px solid rgba(0, 0, 0, 0.15);
             background: rgba(255, 255, 255, 0.85);
@@ -130,14 +130,14 @@
             justify-content: center;
             cursor: pointer;
         }
-        body.solid-connected .wishlist-btn {
+        body.solid-connected .action-btn {
             display: inline-flex;
         }
-        .wishlist-btn:hover {
+        .action-btn:hover {
             background: rgba(255, 255, 255, 1);
             border-color: rgba(0, 0, 0, 0.25);
         }
-        .wishlist-btn::after {
+        .action-btn::after {
             content: attr(data-tooltip);
             position: absolute;
             top: -8px;
@@ -153,9 +153,11 @@
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
-        .wishlist-btn:hover::after {
+        .action-btn:hover::after {
             opacity: 1;
         }
+        .wishlist-btn { right: 10px; }
+        .recomm-btn { right: 40px; }
     </style>
 </head>
 <body>
@@ -178,21 +180,24 @@
         <h2>Newly added books</h2>
         <div class="books">
             <article class="book" data-type="book" data-id="book1">
-                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <button class="action-btn recomm-btn" data-tooltip="View recommendation">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+                <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">The Quiet City</div>
                 <div class="book-meta">by Lina Novak<br />Fiction · 2025</div>
             </article>
             <article class="book" data-type="book" data-id="book2">
-                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">Learning Graphs</div>
                 <div class="book-meta">by M. Rivera<br />Non-fiction · 2024</div>
             </article>
             <article class="book" data-type="book" data-id="book3">
-                <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+                <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">Small Worlds</div>
@@ -203,21 +208,21 @@
     <section class="events">
         <h2>Current events</h2>
         <div class="event" data-type="event" data-id="event1">
-            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+            <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Author Reading: Contemporary Munich</div>
             <div class="event-date">March 12, 2026 · 19:00</div>
         </div>
         <div class="event" data-type="event" data-id="event2">
-            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+            <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Workshop: Introduction to Genealogy Research</div>
             <div class="event-date">March 18, 2026 · 16:00</div>
         </div>
         <div class="event" data-type="event" data-id="event3">
-            <button class="wishlist-btn" data-tooltip="Add this to your wishlist">
+            <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Children’s Story Hour</div>
@@ -242,13 +247,18 @@
     }
 
     document.addEventListener("click", (e) => {
-        const btn = e.target.closest(".wishlist-btn")
-        if (!btn) return
-        const item = btn.closest(".book, .event")
+        const actionBtn = e.target.closest(".action-btn")
+        if (!actionBtn) return
+        const item = actionBtn.closest(".book, .event")
         if (!item) return
         const type = item.dataset.type
         const id = item.dataset.id
-        console.log("Add to wishlist:", { type, id })
+        if (actionBtn.classList.contains("wishlist-btn")) {
+            console.log("Wishlist:", { type, id })
+        }
+        if (actionBtn.classList.contains("recomm-btn")) {
+            console.log("Recommendation:", { type, id })
+        }
     })
 
     let res = await init()
