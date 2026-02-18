@@ -30,7 +30,7 @@ export async function doLogin(redirectUrl) {
     try {
         await login({
             oidcIssuer: SERVER,
-            redirectUrl: redirectUrl, // window.location.href
+            redirectUrl: redirectUrl || window.location.href,
             clientName: "cori-integration-layer",
         })
         return true

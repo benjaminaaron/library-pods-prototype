@@ -29,7 +29,7 @@
         function setStatus(msg) { document.getElementById("status").textContent = msg }
         function setOutput(msg) { document.getElementById("output").textContent = msg }
 
-        document.getElementById("login").onclick = async () => { await doLogin(window.location.href) }
+        document.getElementById("login").onclick = async () => { await doLogin() }
         document.getElementById("logout").onclick = async () => { await doLogout(); window.location.reload() }
         document.getElementById("read").onclick = async () => { setOutput(await read()) }
         document.getElementById("write").onclick = async () => { setOutput(await write()) }

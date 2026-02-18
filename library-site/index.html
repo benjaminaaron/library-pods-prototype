@@ -163,14 +163,12 @@
     </section>
 </main>
 <script type="module">
-    import { doLogin, init } from "../integration-layer/dist/bundle.js"
+    import { doLogin, doLogout, init } from "../integration-layer/dist/bundle.js"
 
     function setIsLoggedIn(loggedIn) {
-        document.getElementById("connect-solid").innerText = loggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
-    }
-
-    document.getElementById("connect-solid").onclick = async () => {
-        setIsLoggedIn(await doLogin(window.location.href))
+        const btn = document.getElementById("connect-solid")
+        btn.innerText = loggedIn ? "Disconnect Solid Pod" : "Connect your Solid Pod"
+        btn.onclick = loggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
     }
 
     let res = await init()
