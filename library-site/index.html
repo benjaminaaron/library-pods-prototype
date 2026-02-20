@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <!--<link rel="stylesheet" href="styles.css" />-->
     <title>Library Site Mockup</title>
     <style>
         body {
@@ -133,6 +134,9 @@
         body.solid-connected .action-btn {
             display: inline-flex;
         }
+        body.solid-connected .sub-links {
+            display: block;
+        }
         .action-btn:hover {
             background: rgba(255, 255, 255, 1);
             border-color: rgba(0, 0, 0, 0.25);
@@ -158,6 +162,22 @@
         }
         .wishlist-btn { right: 10px; }
         .recomm-btn { right: 40px; }
+        .sub-links {
+            display: none;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 20px 0;
+            text-align: right;
+        }
+        .sub-links a {
+            display: inline-block;
+            font-size: 12px;
+            text-decoration: none;
+            color: #2f5d8a;
+        }
+        .sub-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -169,6 +189,10 @@
         <a href="#" id="connect-solid">Connect your Solid Pod</a>
     </nav>
 </header>
+
+<div class="sub-links">
+    <a href="#">Solid Pod Cockpit</a>
+</div>
 
 <main class="container">
     <div class="welcome" id="welcome-header">Welcome, nice that you are here!</div>
@@ -206,7 +230,7 @@
         </div>
     </section>
     <section class="events">
-        <h2>Current events</h2>
+        <h2>Upcoming events</h2>
         <div class="event" data-type="event" data-id="event1">
             <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
