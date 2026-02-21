@@ -134,6 +134,9 @@
         body.solid-connected .wishlist-btn {
             display: inline-flex;
         }
+        body.solid-connected .wishlist-btn.wishlisted {
+            display: none;
+        }
         body.solid-connected .recomm-btn {
             display: none;
         }
@@ -402,8 +405,26 @@
                 BIND(REPLACE(STR(?pred), "^.*wishlist-item-", "") AS ?type)
             }`
         rows = await runQueryOnProfile(query)
-        let wishlistList = document.getElementById("wishlist-list")
-        wishlistList.innerHTML = rows.map(row => `<li>${row.type}: ${row.item}</li>`).join("")
+        const wishlistEntries = (rows || []).map(row => ({
+            type: (row.type || "").toString().trim().toLowerCase(),
+            item: (row.item || "").toString().trim()
+        }))
+        const wishlistKeySet = new Set(wishlistEntries.map(e => `${e.type}:${e.item}`))
+
+        const wishlistList = document.getElementById("wishlist-list")
+        wishlistList.innerHTML = wishlistEntries.length
+            ? wishlistEntries.map(row => `<li>${row.type}: ${row.item}</li>`).join("")
+            : `<li>No items yet.</li>`
+
+        // hide wishlist buttons for already-wishlisted items
+        document.querySelectorAll(".book, .event").forEach((el) => {
+            const type = (el.dataset.type || "").toString().trim().toLowerCase()
+            const id = (el.dataset.id || "").toString().trim()
+            const btn = el.querySelector(".wishlist-btn")
+            if (!btn) return
+            const alreadyWishlisted = wishlistKeySet.has(`${type}:${id}`)
+            btn.classList.toggle("wishlisted", alreadyWishlisted)
+        })
         // recommendations (preferred genres -> show recomm button on matching books)
         query = `
             PREFIX ex: <https://example.com/>
@@ -411,7 +432,7 @@
                 ?s ex:genre ?genre .
             }`
         rows = await runQueryOnProfile(query)
-        const genres = new Set(rows.map(r => (r.genre)))
+        const genres = new Set((rows || []).map(r => (r.genre || "").toString().trim().toLowerCase()).filter(Boolean))
         document.querySelectorAll(".book").forEach((bookEl) => {
             const bookGenre = (bookEl.dataset.genre || "").toString().trim().toLowerCase()
             const recommBtn = bookEl.querySelector(".recomm-btn")
