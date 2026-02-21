@@ -378,19 +378,23 @@
     </div>
 </div>
 <script type="module">
-    import { doLogin, doLogout, init, runQueryOnProfile } from "../integration-layer/dist/bundle.js"
+    import { doLogin, doLogout, init, runQueryOnProfile, addProfileDatapoint } from "../integration-layer/dist/bundle.js"
+
+    async function checkForName() {
+        let query = `
+                PREFIX ex: <https://example.com/>
+                SELECT ?name WHERE { ?s ex:name ?name }`
+        let rows = await runQueryOnProfile(query)
+        let name = rows[0]?.name
+        document.getElementById("welcome-header").innerText = name ? `Welcome ${name}!` : "Welcome, nice that you are here!"
+    }
 
     async function updateSolidLoginStatus(isLoggedIn) {
         const btn = document.getElementById("connect-solid")
         btn.innerText = isLoggedIn ? "Disconnect Library Pod" : "Connect your Library Pod"
         btn.onclick = isLoggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
         document.body.classList.toggle("solid-connected", !!isLoggedIn)
-        let query = `
-                PREFIX ex: <https://example.com/>
-                SELECT ?name WHERE { ?s ex:name ?name }`
-        let rows = await runQueryOnProfile(query)
-        let name = rows[0]?.name
-        document.getElementById("welcome-header").innerText = (isLoggedIn && name) ? `Welcome back ${name}!` : "Welcome, nice that you are here!"
+        await checkForName()
     }
 
     document.addEventListener("click", (e) => {
@@ -421,7 +425,12 @@
         }
     })
     document.getElementById("save-to-pod-btn").addEventListener("click", async () => {
-        // TODO
+        const el = document.getElementById("free-input")
+        let [pred, obj] = el.value.split(":").map(s => s.trim())
+        await addProfileDatapoint(pred, obj)
+        el.value = ""
+        overlay.classList.remove("active")
+        await checkForName()
     })
 
     let res = await init()

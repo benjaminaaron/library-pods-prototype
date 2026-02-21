@@ -103,6 +103,16 @@ async function appProfileWriteDemo() {
     return APP_PROFILE_URL
 }
 
+export async function addProfileDatapoint(predStr, objStr) {
+    let ds = await getSolidDataset(APP_PROFILE_URL, { fetch: session.fetch })
+    const existing = getThing(ds, userThingUrl())
+    const userThing = buildThing(existing ?? createThing({ url: userThingUrl() }))
+        .addStringNoLocale(`${ns}${predStr}`, objStr)
+        .build()
+    ds = setThing(ds, userThing)
+    await saveSolidDatasetAt(APP_PROFILE_URL, ds, { fetch: session.fetch })
+}
+
 export async function read() {
     try {
         return "Profile contents:\n\n" + await appProfileRead()
