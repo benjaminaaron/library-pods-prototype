@@ -131,7 +131,13 @@
             justify-content: center;
             cursor: pointer;
         }
-        body.solid-connected .action-btn {
+        body.solid-connected .wishlist-btn {
+            display: inline-flex;
+        }
+        body.solid-connected .recomm-btn {
+            display: none;
+        }
+        body.solid-connected .recomm-btn.match {
             display: inline-flex;
         }
         body.solid-connected .sub-links {
@@ -300,7 +306,7 @@
     <section>
         <h2>Newly added books</h2>
         <div class="books">
-            <article class="book" data-type="book" data-id="book1">
+            <article class="book" data-type="book" data-id="book1" data-genre="Fiction">
                 <button class="action-btn recomm-btn" data-tooltip="View recommendation">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </button>
@@ -310,14 +316,20 @@
                 <div class="book-title">The Quiet City</div>
                 <div class="book-meta">by Lina Novak<br />Fiction · 2025</div>
             </article>
-            <article class="book" data-type="book" data-id="book2">
+            <article class="book" data-type="book" data-id="book2" data-genre="Computer Science">
+                <button class="action-btn recomm-btn" data-tooltip="View recommendation">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
                 <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">Learning Graphs</div>
                 <div class="book-meta">by M. Rivera<br />Computer Science · 2024</div>
             </article>
-            <article class="book" data-type="book" data-id="book3">
+            <article class="book" data-type="book" data-id="book3" data-genre="Essay">
+                <button class="action-btn recomm-btn" data-tooltip="View recommendation">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
                 <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
@@ -374,12 +386,14 @@
     import { doLogin, doLogout, init, runQueryOnProfile, addProfileDatapoint } from "../integration-layer/dist/bundle.js"
 
     async function update() {
+        // name
         let query = `
                 PREFIX ex: <https://example.com/>
                 SELECT ?name WHERE { ?s ex:name ?name }`
         let rows = await runQueryOnProfile(query)
         let name = rows[0]?.name
         document.getElementById("welcome-header").innerText = name ? `Welcome ${name}!` : "Welcome, nice that you are here!"
+        // wishlist
         query = `
             PREFIX ex: <https://example.com/>
             SELECT ?type ?item WHERE {
@@ -390,6 +404,20 @@
         rows = await runQueryOnProfile(query)
         let wishlistList = document.getElementById("wishlist-list")
         wishlistList.innerHTML = rows.map(row => `<li>${row.type}: ${row.item}</li>`).join("")
+        // recommendations (preferred genres -> show recomm button on matching books)
+        query = `
+            PREFIX ex: <https://example.com/>
+            SELECT ?genre WHERE {
+                ?s ex:genre ?genre .
+            }`
+        rows = await runQueryOnProfile(query)
+        const genres = new Set(rows.map(r => (r.genre)))
+        document.querySelectorAll(".book").forEach((bookEl) => {
+            const bookGenre = (bookEl.dataset.genre || "").toString().trim().toLowerCase()
+            const recommBtn = bookEl.querySelector(".recomm-btn")
+            const isMatch = bookGenre && genres.has(bookGenre)
+            recommBtn.classList.toggle("match", isMatch)
+        })
     }
 
     async function updateSolidLoginStatus(isLoggedIn) {
@@ -412,7 +440,8 @@
             await update()
         }
         if (actionBtn.classList.contains("recomm-btn")) {
-            console.log("Recommendation:", { type, id })
+            const genre = item.dataset.genre
+            alert(`This book has your preferred genre "${genre}".`)
         }
     })
 
