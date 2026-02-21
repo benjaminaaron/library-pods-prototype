@@ -315,14 +315,14 @@
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">Learning Graphs</div>
-                <div class="book-meta">by M. Rivera<br />Non-fiction · 2024</div>
+                <div class="book-meta">by M. Rivera<br />Computer Science · 2024</div>
             </article>
             <article class="book" data-type="book" data-id="book3">
                 <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                     <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="book-title">Small Worlds</div>
-                <div class="book-meta">by A. Schmidt<br />Essays · 2026</div>
+                <div class="book-meta">by A. Schmidt<br />Essay · 2026</div>
             </article>
         </div>
     </section>
@@ -333,21 +333,21 @@
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Author Reading: Contemporary Munich</div>
-            <div class="event-date">March 12, 2026 · 19:00</div>
+            <div class="event-date">March 12, 2026 · 19:00 · Reading</div>
         </div>
         <div class="event" data-type="event" data-id="event2">
             <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Workshop: Introduction to Genealogy Research</div>
-            <div class="event-date">March 18, 2026 · 16:00</div>
+            <div class="event-date">March 18, 2026 · 16:00 · Workshop</div>
         </div>
         <div class="event" data-type="event" data-id="event3">
             <button class="action-btn wishlist-btn" data-tooltip="Add this to your wishlist">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <div class="event-title">Children’s Story Hour</div>
-            <div class="event-date">March 22, 2026 · 10:30</div>
+            <div class="event-date">March 22, 2026 · 10:30 · Storytime</div>
         </div>
     </section>
 </main>
@@ -380,13 +380,23 @@
 <script type="module">
     import { doLogin, doLogout, init, runQueryOnProfile, addProfileDatapoint } from "../integration-layer/dist/bundle.js"
 
-    async function checkForName() {
+    async function update() {
         let query = `
                 PREFIX ex: <https://example.com/>
                 SELECT ?name WHERE { ?s ex:name ?name }`
         let rows = await runQueryOnProfile(query)
         let name = rows[0]?.name
         document.getElementById("welcome-header").innerText = name ? `Welcome ${name}!` : "Welcome, nice that you are here!"
+        query = `
+            PREFIX ex: <https://example.com/>
+            SELECT ?type ?item WHERE {
+                ?s ?pred ?item .
+                FILTER regex(STR(?pred), "wishlist-item-", "i")
+                BIND(REPLACE(STR(?pred), "^.*wishlist-item-", "") AS ?type)
+            }`
+        rows = await runQueryOnProfile(query)
+        let wishlistList = document.getElementById("wishlist-list")
+        wishlistList.innerHTML = rows.map(row => `<li>${row.type}: ${row.item}</li>`).join("")
     }
 
     async function updateSolidLoginStatus(isLoggedIn) {
@@ -394,10 +404,10 @@
         btn.innerText = isLoggedIn ? "Disconnect Library Pod" : "Connect your Library Pod"
         btn.onclick = isLoggedIn ? async () => { await doLogout(); window.location.reload() } : async () => { await doLogin() }
         document.body.classList.toggle("solid-connected", !!isLoggedIn)
-        await checkForName()
+        await update()
     }
 
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
         const actionBtn = e.target.closest(".action-btn")
         if (!actionBtn) return
         const item = actionBtn.closest(".book, .event")
@@ -405,7 +415,8 @@
         const type = item.dataset.type
         const id = item.dataset.id
         if (actionBtn.classList.contains("wishlist-btn")) {
-            console.log("Wishlist:", { type, id })
+            await addProfileDatapoint(`wishlist-item-${type}`, id)
+            await update()
         }
         if (actionBtn.classList.contains("recomm-btn")) {
             console.log("Recommendation:", { type, id })
@@ -430,7 +441,7 @@
         await addProfileDatapoint(pred, obj)
         el.value = ""
         overlay.classList.remove("active")
-        await checkForName()
+        await update()
     })
 
     let res = await init()
