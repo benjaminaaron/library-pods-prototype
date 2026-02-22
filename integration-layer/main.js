@@ -5,8 +5,8 @@ import { sparqlSelect, storeFromDataset } from "@foerderfunke/sem-ops-utils"
 const SERVER = "http://localhost:3000"
 const POD = "citizen-pod"
 const WEBID_CARD_URL = `${SERVER}/${POD}/profile/card`
-const APP_CONTAINER = `${SERVER}/${POD}/private/apps/cori/`
-const APP_PROFILE_URL = `${APP_CONTAINER}main.ttl`
+const APP_CONTAINER = `${SERVER}/${POD}/private/apps/library/`
+const APP_PROFILE_URL = `${APP_CONTAINER}profile.ttl`
 const ns = "https://example.com/"
 
 const session = getDefaultSession()
@@ -32,7 +32,7 @@ export async function doLogin(redirectUrl) {
         await login({
             oidcIssuer: SERVER,
             redirectUrl: redirectUrl || window.location.href,
-            clientName: "cori-integration-layer",
+            clientName: "solid-integration-layer",
         })
         return true
     } catch (err) {
