@@ -1,5 +1,7 @@
 # library-pods-prototype
 
+> This project moved [here](https://github.com/it-at-m/bib-pods/tree/main/early-prototype).
+
 The repo contains three modules:
 - `solid-server`: the solid server managing the pods
 - `integration-layer`: the integration layer between the solid server and clients using the pods
